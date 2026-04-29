@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useRef, useState } from 'react';
 import { EyeIcon } from 'src/module/components/EyeIcon';
 import { NavLinks } from 'src/module/layouts/NavLinks';
@@ -137,7 +136,7 @@ export const Header = () => {
 		<>
 			{isDesktop ? (
 				<>
-					<div className='pointer-events-none fixed top-8 left-8 z-50'>
+					<div className='pointer-events-none fixed inset-x-0 top-8 z-50 mx-auto w-full max-w-360 px-8'>
 						<div
 							className={cn(
 								'pointer-events-auto flex items-center gap-5 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -153,7 +152,7 @@ export const Header = () => {
 
 					<div
 						className={cn(
-							'pointer-events-none fixed top-8 left-8 z-50 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]',
+							'pointer-events-none fixed inset-x-0 top-8 z-50 mx-auto w-full max-w-360 px-8 transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)]',
 							mode === 'top' ? 'opacity-0' : 'opacity-100'
 						)}
 					>
