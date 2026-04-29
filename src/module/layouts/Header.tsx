@@ -147,7 +147,7 @@ export const Header = () => {
 							<a href='/' aria-label='Go to top'>
 								<img src='/assets/logo_dark.svg' alt='ribbit-logo' className='h-8 w-auto' />
 							</a>
-							<NavLinks />
+							<NavLinks mode={mode} />
 						</div>
 					</div>
 
