@@ -32,3 +32,22 @@
 	--z-index-modal-content: 300;
 	--z-index-loading: 3000;
 }
+
+@keyframes blink {
+	0% {
+		transform: scaleY(1);
+	}
+	40% {
+		transform: scaleY(0.08);
+	}
+	60% {
+		transform: scaleY(0.08);
+	}
+	100% {
+		transform: scaleY(1);
+	}
+}
+
+.eye-blink {
+	animation: blink 0.28s ease-in-out;
+}

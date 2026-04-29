@@ -6,7 +6,7 @@ import {
 } from 'react-router-dom';
 import 'src/App.css';
 import { NotFoundPage } from 'src/module/NotFoundPage';
-import { RootLayout } from 'src/module/RootLayout';
+import { RootLayout } from 'src/module/layouts/RootLayout';
 import { HomePage } from 'src/module/HomePage';
 
 const router = createBrowserRouter(
