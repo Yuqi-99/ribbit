@@ -1,6 +1,8 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Modal } from 'src/module/components/Modal';
+import { createPortal } from 'react-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,6 +23,58 @@ const COMPACT_PADDING_RIGHT = 28;
 const getFramePath = (folder: SageFolder, index: number) =>
 	`/assets/${folder}/${String(index).padStart(3, '0')}.png`;
 
+const INTRO_PLAYBACK_ID = 'xNEVeKx007rd6D3rNgrsN014Fx6st6WGlC4pz01O6ssnxI';
+const INTRO_VIDEO_SOURCES = [
+	`https://stream.mux.com/${INTRO_PLAYBACK_ID}/highest.mp4`,
+	`https://stream.mux.com/${INTRO_PLAYBACK_ID}/high.mp4`,
+	`https://stream.mux.com/${INTRO_PLAYBACK_ID}/medium.mp4`,
+	`https://stream.mux.com/${INTRO_PLAYBACK_ID}/low.mp4`,
+	`https://stream.mux.com/${INTRO_PLAYBACK_ID}.m3u8`,
+];
+
+type IntroVideoProps = {
+	className?: string;
+	controls?: boolean;
+};
+
+const IntroVideo = ({ className, controls = false }: IntroVideoProps) => {
+	const videoRef = useRef<HTMLVideoElement | null>(null);
+	const [sourceIndex, setSourceIndex] = useState(0);
+	const source = INTRO_VIDEO_SOURCES[sourceIndex];
+
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video) return;
+
+		video.load();
+		const promise = video.play();
+
+		if (promise !== undefined) {
+			promise.catch((error) => {
+				console.log('Video playback was prevented:', error);
+			});
+		}
+	}, [source]);
+
+	return (
+		<video
+			ref={videoRef}
+			autoPlay
+			controls={controls}
+			loop
+			muted
+			playsInline
+			src={source}
+			className={className}
+			onError={() => {
+				setSourceIndex((index) =>
+					index < INTRO_VIDEO_SOURCES.length - 1 ? index + 1 : index
+				);
+			}}
+		/>
+	);
+};
+
 export const RibbitIntroScroll = () => {
 	const sectionRef = useRef<HTMLElement | null>(null);
 	const stageRef = useRef<HTMLDivElement | null>(null);
@@ -34,9 +88,9 @@ export const RibbitIntroScroll = () => {
 	const compactStateRef = useRef<{
 		group: { x: number; y: number; scale: number };
 	} | null>(null);
-
 	const [characterFolder, setCharacterFolder] = useState<SageFolder>('sage_push');
 	const [frame, setFrame] = useState(0);
+	const [openModal, setOpenModal] = useState(false);
 
 	const preloadFrames = useMemo(
 		() =>
@@ -178,49 +232,54 @@ export const RibbitIntroScroll = () => {
 	}, []);
 
 	return (
-		<section
-			ref={sectionRef}
-			id='projects'
-			className='relative flex min-h-svh w-full items-center overflow-hidden px-5 md:px-8'
-		>
-			<div ref={stageRef} className='relative mx-auto h-[min(760px,82svh)] w-full max-w-360'>
-				<div
-					ref={groupRef}
-					className='absolute top-0 right-0 flex items-end'
-					style={{ transformOrigin: 'top left' }}
-				>
-					<img
-						ref={characterRef}
-						src={getFramePath(characterFolder, frame)}
-						alt='Sage character pushing the video'
-						className='pointer-events-none relative z-20 h-auto w-[clamp(120px,18vw,260px)] shrink-0 select-none'
-						style={{ transformOrigin: 'bottom right' }}
-						draggable={false}
-					/>
+		<>
+			<section
+				ref={sectionRef}
+				id='projects'
+				className='relative flex w-full items-start overflow-hidden px-4'
+			>
+				<div ref={stageRef} className='relative mx-auto h-[min(600px,60svh)] w-full max-w-360'>
 					<div
-						ref={videoRef}
-						className='bg-darkink relative z-10 aspect-video w-[min(58vw,700px)] shrink-0 overflow-hidden rounded-lg border shadow-[0_30px_90px_rgba(47,47,47,0.28)]'
+						ref={groupRef}
+						className='absolute top-8 right-0 flex items-end'
+						// style={{ transformOrigin: 'top left' }}
 					>
-						<video
-							autoPlay
-							muted
-							loop
-							playsInline
-							src='https://stream.mux.com/xNEVeKx007rd6D3rNgrsN014Fx6st6WGlC4pz01O6ssnxI.m3u8'
-							className='absolute inset-0 h-full w-full object-cover'
+						<img
+							ref={characterRef}
+							src={getFramePath(characterFolder, frame)}
+							alt='Sage character pushing the video'
+							className='pointer-events-none relative z-20 h-auto w-[clamp(120px,18vw,260px)] shrink-0 select-none'
+							// style={{ transformOrigin: 'bottom right' }}
+							draggable={false}
 						/>
-						<div className='absolute inset-0 grid place-items-center'>
-							<button
-								type='button'
-								aria-label='Play intro video'
-								className='text-darkink grid h-16 w-16 place-items-center rounded-full bg-white/92 shadow-[0_12px_36px_rgba(0,0,0,0.22)] transition-transform hover:scale-105'
-							>
-								<span className='border-l-darkink ml-1 h-0 w-0 border-y-10 border-l-16 border-y-transparent' />
-							</button>
+						<div
+							ref={videoRef}
+							className='bg-darkink relative top-8 z-10 aspect-video w-[min(58vw,700px)] shrink-0 overflow-hidden rounded-lg'
+						>
+							<IntroVideo className='absolute inset-0 h-full w-full object-contain' />
+							<div className='absolute inset-0 grid place-items-center'>
+								<button
+									type='button'
+									aria-label='Play intro video'
+									className='text-darkink grid h-16 w-16 cursor-pointer place-items-center rounded-full bg-white/92 shadow-[0_12px_36px_rgba(0,0,0,0.22)] transition-transform hover:scale-105'
+									onClick={() => {
+										setOpenModal(true);
+										console.log('click');
+									}}
+								>
+									<span className='border-l-darkink ml-1 h-0 w-0 border-y-10 border-l-16 border-y-transparent' />
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		</section>
+			</section>
+			{createPortal(
+				<Modal opened={openModal} onClose={() => setOpenModal(false)} blur={true}>
+					<IntroVideo controls className='aspect-video h-full w-full object-cover' />
+				</Modal>,
+				document.body
+			)}
+		</>
 	);
 };
