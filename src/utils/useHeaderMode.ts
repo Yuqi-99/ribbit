@@ -21,7 +21,7 @@ export const useHeaderMode = () => {
 	}, []);
 
 	useEffect(() => {
-		const onScroll = () => setIsAtTop(window.scrollY <= TOP_THRESHOLD);
+		const onScroll = () => setIsAtTop(window.scrollY <= TOP_THRESHOLD && isDesktop);
 
 		onScroll();
 		window.addEventListener('scroll', onScroll, { passive: true });
