@@ -8,10 +8,7 @@ export const HomePage = () => {
 		>
 			<RibbitIntroScroll />
 
-			<section
-				id='about'
-				className='border-darkink/10 grid min-h-[90svh] gap-8 border-y px-5 py-20 md:grid-cols-2 md:px-8'
-			>
+			<section id='about' className='grid min-h-[90svh] gap-8 px-5 py-20 md:grid-cols-2 md:px-8'>
 				<div>
 					<p className='text-darkink/50 mb-4 text-xs tracking-[0.28em] uppercase'>About</p>
 					<h2 className='text-darkink text-3xl font-medium md:text-5xl'>

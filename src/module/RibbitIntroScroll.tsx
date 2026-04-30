@@ -67,9 +67,7 @@ const IntroVideo = ({ className, controls = false }: IntroVideoProps) => {
 			src={source}
 			className={className}
 			onError={() => {
-				setSourceIndex((index) =>
-					index < INTRO_VIDEO_SOURCES.length - 1 ? index + 1 : index
-				);
+				setSourceIndex((index) => (index < INTRO_VIDEO_SOURCES.length - 1 ? index + 1 : index));
 			}}
 		/>
 	);
@@ -238,7 +236,7 @@ export const RibbitIntroScroll = () => {
 				id='projects'
 				className='relative flex w-full items-start overflow-hidden px-4'
 			>
-				<div ref={stageRef} className='relative mx-auto h-[min(600px,60svh)] w-full max-w-360'>
+				<div ref={stageRef} className='relative mx-auto h-[min(700px,70dvh)] w-full max-w-360'>
 					<div
 						ref={groupRef}
 						className='absolute top-8 right-0 flex items-end'
