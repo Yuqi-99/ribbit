@@ -1,3 +1,4 @@
+import { RibbitDesc } from 'src/module/RibbitDesc';
 import { RibbitIntroScroll } from 'src/module/RibbitIntroScroll';
 
 export const HomePage = () => {
@@ -8,19 +9,7 @@ export const HomePage = () => {
 		>
 			<RibbitIntroScroll />
 
-			<section id='about' className='grid min-h-[90svh] gap-8 px-5 py-20 md:grid-cols-2 md:px-8'>
-				<div>
-					<p className='text-darkink/50 mb-4 text-xs tracking-[0.28em] uppercase'>About</p>
-					<h2 className='text-darkink text-3xl font-medium md:text-5xl'>
-						The trick is a pinned scroll scene.
-					</h2>
-				</div>
-				<p className='text-darkink/70 max-w-xl text-base leading-7'>
-					ScrollTrigger pins the hero while a scrubbed timeline moves the video. The same
-					ScrollTrigger update tells us whether the user is scrolling down or up, so the character
-					can swap between push and pull frame sequences.
-				</p>
-			</section>
+			<RibbitDesc />
 
 			<section
 				id='process'
