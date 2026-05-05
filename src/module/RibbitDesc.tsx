@@ -111,10 +111,22 @@ export const RibbitDesc = () => {
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const sectionRef = useRef<HTMLElement>(null);
 	const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
-	const modeRef = useRef<CharacterMode>('idle');
+	const modesRef = useRef<Record<CharacterKey, CharacterMode>>({
+		creator: 'idle',
+		explorer: 'idle',
+		jester: 'idle',
+		outlaw: 'idle',
+	});
 	const idleTimerRef = useRef<number | null>(null);
 
-	const [mode, setMode] = useState<CharacterMode>('idle');
+	const [modes, setModes] = useState<Record<CharacterKey, CharacterMode>>({
+		creator: 'idle',
+		explorer: 'idle',
+		jester: 'idle',
+		outlaw: 'idle',
+	});
+	const frameTickRef = useRef(0);
+
 	const [frames, setFrames] = useState<Record<CharacterKey, number>>({
 		creator: 0,
 		explorer: 0,
@@ -124,20 +136,25 @@ export const RibbitDesc = () => {
 
 	// 1. 序列帧更新
 	useEffect(() => {
-		const interval = window.setInterval(
-			() => {
-				setFrames((prev) => {
-					const next = { ...prev };
-					(Object.keys(next) as CharacterKey[]).forEach((key) => {
-						next[key] = (next[key] + 1) % CHARACTER_ASSETS[key].counts[modeRef.current];
-					});
-					return next;
+		const interval = window.setInterval(() => {
+			frameTickRef.current += 1;
+			setFrames((prev) => {
+				const next = { ...prev };
+				let changed = false;
+				(Object.keys(next) as CharacterKey[]).forEach((key) => {
+					const currentMode = modesRef.current[key];
+					// Skip frame update on odd ticks to keep 'idle' twice as slow (90ms vs 45ms)
+					if (currentMode === 'idle' && frameTickRef.current % 2 !== 0) {
+						return;
+					}
+					next[key] = (next[key] + 1) % CHARACTER_ASSETS[key].counts[currentMode];
+					changed = true;
 				});
-			},
-			mode === 'idle' ? 100 : 45
-		);
+				return changed ? next : prev;
+			});
+		}, 45);
 		return () => window.clearInterval(interval);
-	}, [mode]);
+	}, []);
 
 	// 2. 核心交互逻辑
 	useLayoutEffect(() => {
@@ -166,8 +183,14 @@ export const RibbitDesc = () => {
 			});
 
 			const resetToIdle = () => {
-				modeRef.current = 'idle';
-				setMode('idle');
+				const allIdle: Record<CharacterKey, CharacterMode> = {
+					creator: 'idle',
+					explorer: 'idle',
+					jester: 'idle',
+					outlaw: 'idle',
+				};
+				modesRef.current = allIdle;
+				setModes(allIdle);
 				quickTweens.forEach((qt) => qt.skew(0));
 			};
 
@@ -185,16 +208,11 @@ export const RibbitDesc = () => {
 					const vel = self.getVelocity();
 					const direction = self.direction;
 
-					// 状态切换
-					if (Math.abs(vel) > 15) {
-						const newMode = direction === 1 ? 'push' : 'pull';
-						if (modeRef.current !== newMode) {
-							modeRef.current = newMode;
-							setMode(newMode);
-						}
-						if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
-						idleTimerRef.current = window.setTimeout(resetToIdle, IDLE_DELAY);
-					}
+					const globalMoving = Math.abs(vel) > 15;
+					const globalMode = direction === 1 ? 'push' : 'pull';
+
+					let modesChanged = false;
+					const newModes = { ...modesRef.current };
 
 					quickTweens.forEach((qt, index) => {
 						const rowIdx = index === 3 ? 2 : index;
@@ -207,13 +225,33 @@ export const RibbitDesc = () => {
 						let localP = (p - startP) / (endP - startP);
 						localP = clamp(localP, 0, 1);
 
+						const isMoving = localP > 0 && localP < 1 && globalMoving;
+						const character = DESC_ITEMS[index].character;
+						const expectedMode = isMoving ? globalMode : 'idle';
+
+						if (newModes[character] !== expectedMode) {
+							newModes[character] = expectedMode;
+							modesChanged = true;
+						}
+
 						const moveProgress = gsap.parseEase('power3.out')(localP);
 						const baseX = qt.scatterX * (1 - moveProgress);
-						const targetSkew = clamp(vel / 50, -55, 55);
+						const targetSkew = isMoving ? clamp(vel / 50, -55, 55) : 0;
 
 						qt.x(baseX);
 						qt.skew(targetSkew);
 					});
+
+					if (modesChanged) {
+						modesRef.current = newModes;
+						setModes(newModes);
+					}
+
+					// 状态重置计时器
+					if (globalMoving) {
+						if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
+						idleTimerRef.current = window.setTimeout(resetToIdle, IDLE_DELAY);
+					}
 				},
 			});
 		}, sectionRef);
@@ -233,7 +271,7 @@ export const RibbitDesc = () => {
 						<div className='flex min-h-0 w-full flex-1 items-center justify-center overflow-visible'>
 							<DescWord
 								item={DESC_ITEMS[0]}
-								mode={mode}
+								mode={modes['creator']}
 								frame={frames['creator']}
 								setRowRef={(l, n) => (rowRefs.current[l] = n)}
 							/>
@@ -243,7 +281,7 @@ export const RibbitDesc = () => {
 						<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full flex-1 items-center justify-center overflow-visible bg-linear-to-t'>
 							<DescWord
 								item={DESC_ITEMS[1]}
-								mode={mode}
+								mode={modes['jester']}
 								frame={frames['jester']}
 								setRowRef={(l, n) => (rowRefs.current[l] = n)}
 							/>
@@ -253,13 +291,13 @@ export const RibbitDesc = () => {
 						<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full max-w-360 flex-1 items-center justify-center overflow-visible bg-linear-to-t px-10 md:px-32'>
 							<DescWord
 								item={DESC_ITEMS[2]}
-								mode={mode}
+								mode={modes['explorer']}
 								frame={frames['explorer']}
 								setRowRef={(l, n) => (rowRefs.current[l] = n)}
 							/>
 							<DescWord
 								item={DESC_ITEMS[3]}
-								mode={mode}
+								mode={modes['outlaw']}
 								frame={frames['outlaw']}
 								setRowRef={(l, n) => (rowRefs.current[l] = n)}
 							/>
