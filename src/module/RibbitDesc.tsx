@@ -22,7 +22,7 @@ type DescItem = {
 	scatterX: number; // 初始偏移量，正值从右侧入场，负值从左侧入场
 };
 
-const DESC_SCROLL_DISTANCE = 500; // sticky wrapper approach: total scroll = 100dvh + this
+const DESC_SCROLL_DISTANCE = 700; // sticky wrapper approach: total scroll = 100dvh + this
 const IDLE_DELAY = 120;
 
 const CHARACTER_ASSETS: Record<CharacterKey, CharacterAsset> = {
@@ -48,25 +48,25 @@ const CHARACTER_ASSETS: Record<CharacterKey, CharacterAsset> = {
 const DESC_ITEMS: DescItem[] = [
 	{
 		character: 'creator',
-		characterClassName: '-top-16 left-0 w-[clamp(100px,14vw,200px)]',
+		characterClassName: 'top-0 -left-18 md:-left-22 lg:-left-30 w-[clamp(100px,14vw,200px)]',
 		label: 'Curious',
 		scatterX: 1, // Will be replaced dynamically by vw
 	},
 	{
 		character: 'jester',
-		characterClassName: '-right-36 -bottom-10 w-[clamp(160px,24vw,320px)]',
+		characterClassName: '-right-30 md:-right-36 -bottom-10 w-[clamp(160px,24vw,320px)]',
 		label: 'Fullservice',
 		scatterX: -1, // Will be replaced dynamically by vw
 	},
 	{
 		character: 'explorer',
-		characterClassName: '-right-10 -bottom-6 w-[clamp(90px,12vw,160px)]',
+		characterClassName: '-bottom-6 w-[clamp(90px,12vw,160px)]',
 		label: 'Motion',
 		scatterX: -1, // Will be replaced dynamically by vw
 	},
 	{
 		character: 'outlaw',
-		characterClassName: '-left-16 -bottom-8 w-[clamp(85px,11vw,150px)]',
+		characterClassName: '-left-8 -bottom-8 w-[clamp(85px,11vw,150px)]',
 		label: 'Agency',
 		scatterX: 1, // Will be replaced dynamically by vw
 	},
@@ -228,9 +228,9 @@ export const RibbitDesc = () => {
 					{/* Header */}
 					<img src='/assets/ribbit_is_a.svg' className='w-24 md:w-32' alt='' />
 
-					<div className='flex w-full flex-col items-center gap-4'>
+					<div className='flex min-h-0 w-full flex-1 flex-col items-center gap-2 py-2 sm:gap-4 sm:py-0'>
 						{/* Row 1: Curious */}
-						<div className='flex h-[22vh] w-full items-center justify-center overflow-visible'>
+						<div className='flex min-h-0 w-full flex-1 items-center justify-center overflow-visible'>
 							<DescWord
 								item={DESC_ITEMS[0]}
 								mode={mode}
@@ -240,7 +240,7 @@ export const RibbitDesc = () => {
 						</div>
 
 						{/* Row 2: Fullservice */}
-						<div className='flex h-[22vh] w-full items-center justify-center overflow-visible'>
+						<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full flex-1 items-center justify-center overflow-visible bg-linear-to-t'>
 							<DescWord
 								item={DESC_ITEMS[1]}
 								mode={mode}
@@ -250,7 +250,7 @@ export const RibbitDesc = () => {
 						</div>
 
 						{/* Row 3: Motion & Agency */}
-						<div className='flex h-[22vh] w-full max-w-360 items-center justify-between overflow-visible px-10 md:px-32'>
+						<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full max-w-360 flex-1 items-center justify-center overflow-visible bg-linear-to-t px-10 md:px-32'>
 							<DescWord
 								item={DESC_ITEMS[2]}
 								mode={mode}
@@ -269,7 +269,7 @@ export const RibbitDesc = () => {
 					{/* Footer */}
 					<img src='/assets/based_in_cph.svg' className='w-50 md:w-60' alt='' />
 
-					<button className='border-darkink -skew-x-12 rounded-md border p-2 text-sm font-semibold uppercase'>
+					<button className='border-darkink pointer-events-auto -skew-x-12 rounded-md border p-2 text-sm font-semibold uppercase'>
 						Ribbit Who?
 					</button>
 				</div>
