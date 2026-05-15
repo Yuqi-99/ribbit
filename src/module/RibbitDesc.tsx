@@ -311,7 +311,7 @@ export const RibbitDesc = () => {
 			</div>
 
 			{/* Footer extracted from sticky section to give distance */}
-			<div className='relative z-20 flex w-full flex-col items-center justify-center gap-10 py-8'>
+			<div className='relative z-20 flex w-full flex-col items-center justify-center gap-10 pt-8 pb-36'>
 				<img src='/assets/based_in_cph.svg' className='w-50 md:w-60' alt='' />
 
 				<button className='border-darkink hover:bg-darkink hover:text-lightgrey pointer-events-auto -skew-x-12 rounded-md border p-2 text-sm font-semibold uppercase transition-colors'>
