@@ -260,58 +260,64 @@ export const RibbitDesc = () => {
 	}, []);
 
 	return (
-		<div ref={wrapperRef} style={{ height: `calc(100dvh + ${DESC_SCROLL_DISTANCE}px)` }}>
-			<section ref={sectionRef} className='sticky top-0 z-10 h-dvh overflow-hidden'>
-				<div className='pointer-events-none relative flex h-full w-full flex-col items-center justify-between py-4'>
-					{/* Header */}
-					<img src='/assets/ribbit_is_a.svg' className='w-24 md:w-32' alt='' />
-
-					<div className='flex min-h-0 w-full flex-1 flex-col items-center gap-2 py-2 sm:gap-4 sm:py-0'>
-						{/* Row 1: Curious */}
-						<div className='flex min-h-0 w-full flex-1 items-center justify-center overflow-visible'>
-							<DescWord
-								item={DESC_ITEMS[0]}
-								mode={modes['creator']}
-								frame={frames['creator']}
-								setRowRef={(l, n) => (rowRefs.current[l] = n)}
-							/>
+		<div className='flex w-full flex-col'>
+			<div ref={wrapperRef} style={{ height: `calc(100dvh + ${DESC_SCROLL_DISTANCE}px)` }}>
+				<section ref={sectionRef} className='sticky top-0 z-10 h-dvh overflow-hidden'>
+					<div className='pointer-events-none relative flex h-full w-full flex-col items-center justify-between py-6 sm:py-10'>
+						{/* Header */}
+						<div className='shrink-0'>
+							<img src='/assets/ribbit_is_a.svg' className='w-24 md:w-32' alt='' />
 						</div>
 
-						{/* Row 2: Fullservice */}
-						<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full flex-1 items-center justify-center overflow-visible bg-linear-to-t'>
-							<DescWord
-								item={DESC_ITEMS[1]}
-								mode={modes['jester']}
-								frame={frames['jester']}
-								setRowRef={(l, n) => (rowRefs.current[l] = n)}
-							/>
-						</div>
+						<div className='flex min-h-0 w-full flex-1 flex-col items-center gap-2 py-6 sm:gap-4 sm:py-10'>
+							{/* Row 1: Curious */}
+							<div className='flex min-h-0 w-full flex-1 items-center justify-center overflow-visible'>
+								<DescWord
+									item={DESC_ITEMS[0]}
+									mode={modes['creator']}
+									frame={frames['creator']}
+									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+								/>
+							</div>
 
-						{/* Row 3: Motion & Agency */}
-						<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full max-w-360 flex-1 items-center justify-center overflow-visible bg-linear-to-t px-10 md:px-32'>
-							<DescWord
-								item={DESC_ITEMS[2]}
-								mode={modes['explorer']}
-								frame={frames['explorer']}
-								setRowRef={(l, n) => (rowRefs.current[l] = n)}
-							/>
-							<DescWord
-								item={DESC_ITEMS[3]}
-								mode={modes['outlaw']}
-								frame={frames['outlaw']}
-								setRowRef={(l, n) => (rowRefs.current[l] = n)}
-							/>
+							{/* Row 2: Fullservice */}
+							<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full flex-1 items-center justify-center overflow-visible bg-linear-to-t'>
+								<DescWord
+									item={DESC_ITEMS[1]}
+									mode={modes['jester']}
+									frame={frames['jester']}
+									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+								/>
+							</div>
+
+							{/* Row 3: Motion & Agency */}
+							<div className='from-darkink/0 to-darkink/5 flex min-h-0 w-full max-w-360 flex-1 items-center justify-center overflow-visible bg-linear-to-t px-10 md:px-32'>
+								<DescWord
+									item={DESC_ITEMS[2]}
+									mode={modes['explorer']}
+									frame={frames['explorer']}
+									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+								/>
+								<DescWord
+									item={DESC_ITEMS[3]}
+									mode={modes['outlaw']}
+									frame={frames['outlaw']}
+									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+								/>
+							</div>
 						</div>
 					</div>
+				</section>
+			</div>
 
-					{/* Footer */}
-					<img src='/assets/based_in_cph.svg' className='w-50 md:w-60' alt='' />
+			{/* Footer extracted from sticky section to give distance */}
+			<div className='relative z-20 flex w-full flex-col items-center justify-center gap-10 py-8'>
+				<img src='/assets/based_in_cph.svg' className='w-50 md:w-60' alt='' />
 
-					<button className='border-darkink pointer-events-auto -skew-x-12 rounded-md border p-2 text-sm font-semibold uppercase'>
-						Ribbit Who?
-					</button>
-				</div>
-			</section>
+				<button className='border-darkink hover:bg-darkink hover:text-lightgrey pointer-events-auto -skew-x-12 rounded-md border p-2 text-sm font-semibold uppercase transition-colors'>
+					Ribbit Who?
+				</button>
+			</div>
 		</div>
 	);
 };
