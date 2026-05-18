@@ -9,6 +9,71 @@ export type HeaderMode = 'top' | 'compact' | 'expanded' | 'footer';
 export type EyeTone = 'dark' | 'white';
 
 const HOVER_CLOSE_DELAY = 140;
+const MOBILE_LOGO_SAMPLE_POINT = { x: 58, y: 34 };
+
+type LogoTone = 'dark' | 'light';
+
+const getOpaqueBackgroundColor = (elements: Element[]) => {
+	for (const element of elements) {
+		const { backgroundColor } = window.getComputedStyle(element);
+		const match = backgroundColor.match(/rgba?\(([^)]+)\)/);
+
+		if (!match) {
+			continue;
+		}
+
+		const channels = match[1].split(',').map((value) => Number.parseFloat(value.trim()));
+		const alpha = channels[3] ?? 1;
+
+		if (alpha > 0.05) {
+			return channels.slice(0, 3);
+		}
+	}
+
+	return [250, 250, 250];
+};
+
+const isDarkColor = ([red, green, blue]: number[]) => {
+	const luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
+	return luminance < 0.55;
+};
+
+const useMobileLogoTone = (isDesktop: boolean) => {
+	const [logoTone, setLogoTone] = useState<LogoTone>('dark');
+
+	useEffect(() => {
+		if (isDesktop) {
+			return;
+		}
+
+		let frame = 0;
+
+		const updateLogoTone = () => {
+			window.cancelAnimationFrame(frame);
+			frame = window.requestAnimationFrame(() => {
+				const elements = document.elementsFromPoint(
+					MOBILE_LOGO_SAMPLE_POINT.x,
+					MOBILE_LOGO_SAMPLE_POINT.y
+				);
+				const backgroundColor = getOpaqueBackgroundColor(elements);
+
+				setLogoTone(isDarkColor(backgroundColor) ? 'light' : 'dark');
+			});
+		};
+
+		updateLogoTone();
+		window.addEventListener('scroll', updateLogoTone, { passive: true });
+		window.addEventListener('resize', updateLogoTone);
+
+		return () => {
+			window.cancelAnimationFrame(frame);
+			window.removeEventListener('scroll', updateLogoTone);
+			window.removeEventListener('resize', updateLogoTone);
+		};
+	}, [isDesktop]);
+
+	return isDesktop ? 'dark' : logoTone;
+};
 
 const FloatingHeaderControl = ({
 	mode,
@@ -131,6 +196,9 @@ const FloatingHeaderControl = ({
 
 export const Header = () => {
 	const { isDesktop, mode, isOpen, setIsOpen } = useHeaderMode();
+	const mobileLogoTone = useMobileLogoTone(isDesktop);
+	const mobileLogoSrc =
+		mobileLogoTone === 'light' ? '/assets/logo_light.svg' : '/assets/logo_dark.svg';
 
 	return (
 		<>
@@ -165,7 +233,7 @@ export const Header = () => {
 				<>
 					<div className='fixed top-5 left-5 z-50'>
 						<a href='/' aria-label='Go to top'>
-							<img src='/assets/logo_dark.svg' alt='ribbit-logo' className='h-7 w-auto' />
+							<img src={mobileLogoSrc} alt='ribbit-logo' className='h-7 w-auto' />
 						</a>
 					</div>
 

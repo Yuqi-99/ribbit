@@ -1,3 +1,4 @@
+import { FaqSection } from 'src/module/FaqSection';
 import { FeaturedProject } from 'src/module/FeaturedProject';
 import { RibbitDesc } from 'src/module/RibbitDesc';
 import { RibbitIntroScroll } from 'src/module/RibbitIntroScroll';
@@ -13,6 +14,8 @@ export const HomePage = () => {
 			<RibbitDesc />
 
 			<FeaturedProject />
+
+			<FaqSection />
 
 			<footer
 				id='page-footer'

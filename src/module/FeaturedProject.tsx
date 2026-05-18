@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, forwardRef } from 'react';
-import clsx from 'clsx';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import { cn } from 'src/utils/cn';
 
 type ProjectType = {
 	title: string;
@@ -131,12 +131,12 @@ export const FeaturedProject = () => {
 
 			{/* Bottom Button */}
 			<div className='relative z-30 mt-10 flex justify-center pb-20'>
-				<a
-					href='/projects/'
-					className='hover:text-darkink inline-flex items-center justify-center rounded-full border border-white/20 px-10 py-5 text-xs font-medium text-white transition-all duration-300 hover:bg-white'
+				<button
+					type='button'
+					className='hover:text-darkink inline-flex -skew-x-12 items-center justify-center rounded-md border border-white/60 p-3 text-xs font-medium text-white transition-all duration-300 hover:bg-white'
 				>
 					<span className='tracking-widest uppercase'>All Projects</span>
-				</a>
+				</button>
 			</div>
 		</section>
 	);
@@ -157,7 +157,7 @@ const ProjectCard = forwardRef<HTMLDivElement, { project: ProjectType; isActive:
 		return (
 			<div
 				ref={ref}
-				className={clsx(
+				className={cn(
 					'group pointer-events-auto relative aspect-video w-full max-w-2xl overflow-hidden rounded-lg shadow-2xl transition-all duration-700 ease-out',
 					isActive ? 'scale-110 opacity-100 shadow-white/10' : 'scale-90 opacity-40 shadow-none'
 				)}
@@ -168,7 +168,7 @@ const ProjectCard = forwardRef<HTMLDivElement, { project: ProjectType; isActive:
 				<img
 					src={project.image}
 					alt={project.title}
-					className={clsx(
+					className={cn(
 						'absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)]',
 						isActive ? 'scale-100 opacity-0' : 'scale-90 opacity-100'
 					)}
@@ -181,7 +181,7 @@ const ProjectCard = forwardRef<HTMLDivElement, { project: ProjectType; isActive:
 					muted
 					loop
 					playsInline
-					className={clsx(
+					className={cn(
 						'absolute inset-0 h-full w-full object-cover transition-opacity duration-700',
 						isActive ? 'opacity-100' : 'opacity-0'
 					)}
