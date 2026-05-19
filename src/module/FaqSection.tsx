@@ -46,7 +46,7 @@ const services = [
 ];
 
 export const FaqSection = () => {
-	const [openIndex, setOpenIndex] = useState(0);
+	const [openIndex, setOpenIndex] = useState(-1);
 	const [hover, setHover] = useState(false);
 
 	useEffect(() => {
@@ -104,7 +104,9 @@ export const FaqSection = () => {
 										<div
 											className={cn(
 												'flex h-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20 transition-[width,opacity,transform] duration-300 ease-out',
-												hover ? 'w-5 translate-x-0 scale-100 opacity-100' : 'w-0 -translate-x-2 scale-75 opacity-0'
+												hover
+													? 'w-5 translate-x-0 scale-100 opacity-100'
+													: 'w-0 -translate-x-2 scale-75 opacity-0'
 											)}
 										>
 											<HiOutlineArrowRight size={12} className='text-darkink' />

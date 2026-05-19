@@ -98,7 +98,7 @@ const FloatingHeaderControl = ({
 	let width;
 
 	if (isFooterMode || showLinks) {
-		width = 400;
+		width = 360;
 	} else {
 		width = 80;
 	}
