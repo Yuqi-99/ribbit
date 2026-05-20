@@ -66,7 +66,7 @@ export const AccordionItem = ({
 				</div>
 			</button>
 			<div ref={contentRef} className='overflow-hidden' style={{ height: 0, opacity: 0 }}>
-				<div className='pb-4 pl-10'>
+				<div className='pb-4 pl-8'>
 					<p className='text-darkink/70 max-w-xl text-[10px] leading-relaxed md:text-xs'>
 						{description}
 					</p>
