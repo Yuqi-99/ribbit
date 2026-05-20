@@ -57,7 +57,7 @@ export const FaqSection = () => {
 	}, []);
 
 	return (
-		<section className='bg-white px-5 py-20 md:px-8 lg:py-32'>
+		<section id='process' className='bg-white px-5 py-20 md:px-8 lg:py-32'>
 			<div className='mx-auto w-full max-w-360'>
 				<div className='flex w-full flex-col gap-16 lg:flex-row lg:gap-32'>
 					<div className='mb-12 flex w-full flex-col md:mb-16'>

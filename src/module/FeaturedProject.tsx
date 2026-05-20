@@ -76,7 +76,7 @@ export const FeaturedProject = () => {
 
 	return (
 		<section
-			id='featured-projects'
+			id='projects'
 			className='border-darkink/10 bg-darkink relative min-h-screen border-b text-white'
 		>
 			{/* Sticky Text Overlay - Spans full width, text at edges */}

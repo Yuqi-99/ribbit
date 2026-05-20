@@ -29,7 +29,7 @@ export const useHeaderMode = () => {
 	}, []);
 
 	useEffect(() => {
-		const footer = document.getElementById('page-footer');
+		const footer = document.getElementById('contact');
 		if (!footer) {
 			return;
 		}

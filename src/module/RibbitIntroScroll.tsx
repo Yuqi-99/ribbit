@@ -233,7 +233,7 @@ export const RibbitIntroScroll = () => {
 		<>
 			<section
 				ref={sectionRef}
-				id='projects'
+				id='intro'
 				className='relative flex w-full items-start overflow-hidden px-4'
 			>
 				<div ref={stageRef} className='relative mx-auto h-[min(700px,70dvh)] w-full max-w-360'>

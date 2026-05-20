@@ -260,7 +260,7 @@ export const RibbitDesc = () => {
 	}, []);
 
 	return (
-		<div className='flex w-full flex-col'>
+		<div id='about' className='flex w-full flex-col'>
 			<div ref={wrapperRef} style={{ height: `calc(100dvh + ${DESC_SCROLL_DISTANCE}px)` }}>
 				<section ref={sectionRef} className='sticky top-0 z-10 h-dvh overflow-hidden'>
 					<div className='pointer-events-none relative flex h-full w-full flex-col items-center justify-between py-6 sm:py-10'>

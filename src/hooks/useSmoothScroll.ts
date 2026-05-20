@@ -34,6 +34,16 @@ export const useSmoothScroll = (lerpFactor = 0.1) => {
 			if (raf === null) raf = requestAnimationFrame(tick);
 		};
 
+		const onSmoothScrollTo = (e: Event) => {
+			const customEvent = e as CustomEvent<{ y: number }>;
+			targetY = Math.max(0, Math.min(customEvent.detail.y, maxScroll()));
+			currentY = window.scrollY; // start from current position
+
+			if (raf === null) {
+				raf = requestAnimationFrame(tick);
+			}
+		};
+
 		const tick = () => {
 			currentY = lerp(currentY, targetY, lerpFactor);
 
@@ -51,9 +61,11 @@ export const useSmoothScroll = (lerpFactor = 0.1) => {
 		};
 
 		window.addEventListener('wheel', onWheel, { passive: false });
+		window.addEventListener('smoothScrollTo', onSmoothScrollTo);
 
 		return () => {
 			window.removeEventListener('wheel', onWheel);
+			window.removeEventListener('smoothScrollTo', onSmoothScrollTo);
 			if (raf !== null) {
 				cancelAnimationFrame(raf);
 				raf = null;

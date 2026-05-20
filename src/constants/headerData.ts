@@ -1,13 +1,13 @@
 export const HEADER_DATA = [
 	{
-		id: 1,
-		title: 'Projects',
-		url: '#projects',
-	},
-	{
 		id: 2,
 		title: 'About',
 		url: '#about',
+	},
+	{
+		id: 1,
+		title: 'Projects',
+		url: '#projects',
 	},
 	{
 		id: 3,

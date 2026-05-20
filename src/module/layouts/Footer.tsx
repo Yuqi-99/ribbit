@@ -263,7 +263,7 @@ export const Footer = () => {
 
 	return (
 		<footer
-			id='page-footer'
+			id='contact'
 			className='relative h-full min-h-screen overflow-hidden bg-[#502b1a] px-6 pt-16 text-white select-none md:px-12 md:pt-20'
 		>
 			{/* Watermark Logo Shape background */}
