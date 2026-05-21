@@ -1,7 +1,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { clamp } from 'src/utils/clamp';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -109,7 +108,6 @@ const DescWord = ({
 );
 
 export const RibbitDesc = () => {
-	const { isLoadingComplete } = useOutletContext<{ isLoadingComplete: boolean }>();
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const sectionRef = useRef<HTMLElement>(null);
 	const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -136,35 +134,8 @@ export const RibbitDesc = () => {
 		outlaw: 0,
 	});
 
-	const [isSectionVisible, setIsSectionVisible] = useState(false);
-
-	// Observe section visibility to only play sequence animation when in viewport
+	// 1. 序列帧更新
 	useEffect(() => {
-		if (!isLoadingComplete) return;
-
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				setIsSectionVisible(entry.isIntersecting);
-			},
-			{ threshold: 0.01 }
-		);
-
-		const currentSection = sectionRef.current;
-		if (currentSection) {
-			observer.observe(currentSection);
-		}
-
-		return () => {
-			if (currentSection) {
-				observer.unobserve(currentSection);
-			}
-		};
-	}, [isLoadingComplete]);
-
-	// 1. 序列帧更新 (仅在 loading 完成且 section 可见时运行)
-	useEffect(() => {
-		if (!isLoadingComplete || !isSectionVisible) return;
-
 		const interval = window.setInterval(() => {
 			frameTickRef.current += 1;
 			setFrames((prev) => {
@@ -183,12 +154,10 @@ export const RibbitDesc = () => {
 			});
 		}, 45);
 		return () => window.clearInterval(interval);
-	}, [isLoadingComplete, isSectionVisible]);
+	}, []);
 
-	// 2. 核心交互逻辑 (仅在 loading 完成后初始化)
+	// 2. 核心交互逻辑
 	useLayoutEffect(() => {
-		if (!isLoadingComplete) return;
-
 		const ctx = gsap.context(() => {
 			const vw = window.innerWidth;
 			// dynamically set scatter distances based on viewport width to ensure they appear immediately upon scrolling
@@ -288,7 +257,7 @@ export const RibbitDesc = () => {
 		}, sectionRef);
 
 		return () => ctx.revert();
-	}, [isLoadingComplete]);
+	}, []);
 
 	return (
 		<div id='about' className='flex w-full flex-col'>
