@@ -14,6 +14,7 @@ const router = createBrowserRouter(
 		<Route errorElement={<NotFoundPage />}>
 			<Route path='/' element={<RootLayout />}>
 				<Route path='/' element={<HomePage />} />
+				<Route path='*' element={<NotFoundPage />} />
 			</Route>
 		</Route>
 	),

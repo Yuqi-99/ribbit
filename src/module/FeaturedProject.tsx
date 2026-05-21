@@ -159,7 +159,9 @@ const ProjectCard = forwardRef<HTMLDivElement, { project: ProjectType; isActive:
 				ref={ref}
 				className={cn(
 					'group pointer-events-auto relative aspect-video w-full max-w-2xl overflow-hidden rounded-lg shadow-2xl transition-all duration-700 ease-out',
-					isActive ? 'scale-110 opacity-100 shadow-white/10' : 'scale-90 opacity-40 shadow-none'
+					isActive
+						? 'scale-100 opacity-100 shadow-white/10 lg:scale-110'
+						: 'scale-90 opacity-40 shadow-none'
 				)}
 			>
 				<a href={project.href} className='absolute inset-0 z-10 block cursor-pointer' />

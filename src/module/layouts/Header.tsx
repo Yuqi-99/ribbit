@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { EyeIcon } from 'src/module/components/EyeIcon';
 import { NavLinks } from 'src/module/layouts/NavLinks';
 import { clamp } from 'src/utils/clamp';
@@ -195,10 +196,12 @@ const FloatingHeaderControl = ({
 };
 
 export const Header = () => {
+	const { pathname } = useLocation();
+	const isDarkPage = pathname !== '/';
 	const { isDesktop, mode, isOpen, setIsOpen } = useHeaderMode();
 	const mobileLogoTone = useMobileLogoTone(isDesktop);
 	const mobileLogoSrc =
-		mobileLogoTone === 'light' ? '/assets/logo_light.svg' : '/assets/logo_dark.svg';
+		mobileLogoTone === 'light' || isDarkPage ? '/assets/logo_light.svg' : '/assets/logo_dark.svg';
 
 	return (
 		<>
@@ -212,7 +215,11 @@ export const Header = () => {
 							)}
 						>
 							<a href='/' aria-label='Go to top'>
-								<img src='/assets/logo_dark.svg' alt='ribbit-logo' className='h-8 w-auto' />
+								<img
+									src={isDarkPage ? '/assets/logo_light.svg' : '/assets/logo_dark.svg'}
+									alt='ribbit-logo'
+									className='h-8 w-auto'
+								/>
 							</a>
 							<NavLinks mode={mode} />
 						</div>
