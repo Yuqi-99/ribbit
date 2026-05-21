@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Modal } from 'src/module/components/Modal';
 import { createPortal } from 'react-dom';
+import { useOutletContext } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -74,6 +75,7 @@ const IntroVideo = ({ className, controls = false }: IntroVideoProps) => {
 };
 
 export const RibbitIntroScroll = () => {
+	const { isLoadingComplete } = useOutletContext<{ isLoadingComplete: boolean }>();
 	const sectionRef = useRef<HTMLElement | null>(null);
 	const stageRef = useRef<HTMLDivElement | null>(null);
 	const groupRef = useRef<HTMLDivElement | null>(null);
@@ -87,7 +89,7 @@ export const RibbitIntroScroll = () => {
 		group: { x: number; y: number; scale: number };
 	} | null>(null);
 	const [characterFolder, setCharacterFolder] = useState<SageFolder>('sage_push');
-	const [frame, setFrame] = useState(0);
+	const [frame, setFrame] = useState(PUSH_START_FRAME);
 	const [openModal, setOpenModal] = useState(false);
 
 	const preloadFrames = useMemo(
@@ -99,11 +101,12 @@ export const RibbitIntroScroll = () => {
 	);
 
 	useLayoutEffect(() => {
+		if (!isLoadingComplete) return;
 		preloadFrames.forEach((src) => {
 			const img = new Image();
 			img.src = src;
 		});
-	}, [preloadFrames]);
+	}, [preloadFrames, isLoadingComplete]);
 
 	useLayoutEffect(() => {
 		const section = sectionRef.current;
@@ -254,7 +257,7 @@ export const RibbitIntroScroll = () => {
 							ref={videoRef}
 							className='bg-darkink relative top-8 z-10 aspect-video w-[min(58vw,700px)] shrink-0 overflow-hidden rounded-lg'
 						>
-							<IntroVideo className='absolute inset-0 h-full w-full object-contain' />
+							{isLoadingComplete && <IntroVideo className='absolute inset-0 h-full w-full object-contain' />}
 							<div className='absolute inset-0 grid place-items-center'>
 								<button
 									type='button'

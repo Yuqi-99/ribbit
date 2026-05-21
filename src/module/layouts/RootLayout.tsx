@@ -17,7 +17,7 @@ export const RootLayout = () => {
 			<main className='bg-lightgrey text-darkink'>
 				<div className='relative mx-auto flex min-h-screen w-full max-w-360 flex-col justify-start items-stretch'>
 					<Header />
-					<Outlet />
+					<Outlet context={{ isLoadingComplete }} />
 					<Footer />
 				</div>
 			</main>
