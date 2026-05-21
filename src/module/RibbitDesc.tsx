@@ -138,29 +138,6 @@ export const RibbitDesc = () => {
 
 	const [isSectionVisible, setIsSectionVisible] = useState(false);
 
-	// Observe section visibility to only play sequence animation when in viewport
-	useEffect(() => {
-		if (!isLoadingComplete) return;
-
-		const observer = new IntersectionObserver(
-			([entry]) => {
-				setIsSectionVisible(entry.isIntersecting);
-			},
-			{ threshold: 0.01 }
-		);
-
-		const currentSection = sectionRef.current;
-		if (currentSection) {
-			observer.observe(currentSection);
-		}
-
-		return () => {
-			if (currentSection) {
-				observer.unobserve(currentSection);
-			}
-		};
-	}, [isLoadingComplete]);
-
 	// 1. 序列帧更新 (仅在 loading 完成且 section 可见时运行)
 	useEffect(() => {
 		if (!isLoadingComplete || !isSectionVisible) return;
@@ -225,10 +202,17 @@ export const RibbitDesc = () => {
 				quickTweens.forEach((qt) => qt.skew(0));
 			};
 
-			// Single trigger on wrapper — no GSAP pin, CSS sticky handles the lock.
-			// start:'top bottom' = section enters viewport → animation begins immediately.
-			// end:'bottom bottom' = wrapper bottom exits viewport = pin scroll done.
-			// Subsequent sections are structurally below the wrapper; they cannot appear early.
+			// Visibility ScrollTrigger: perfectly tracks if the section is visible on screen
+			ScrollTrigger.create({
+				trigger: wrapperRef.current,
+				start: 'top bottom',
+				end: 'bottom top',
+				onToggle: (self) => {
+					setIsSectionVisible(self.isActive);
+				},
+			});
+
+			// Scrub ScrollTrigger: controls character push/pull animations during sticky scroll
 			ScrollTrigger.create({
 				trigger: wrapperRef.current,
 				start: 'top bottom',
