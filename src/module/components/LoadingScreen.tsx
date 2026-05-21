@@ -102,6 +102,7 @@ export const LoadingScreen = ({ onComplete }: { onComplete?: () => void }) => {
 	useEffect(() => {
 		let currentVal = 0;
 		let timer: number;
+		let fallbackTimer: number;
 
 		const updateProgress = () => {
 			if (currentVal < 99) {
@@ -126,10 +127,17 @@ export const LoadingScreen = ({ onComplete }: { onComplete?: () => void }) => {
 			}, 0);
 		} else {
 			window.addEventListener('load', handlePageLoad);
+			
+			// Fallback: If the window load event is blocked or delayed (e.g. by extensions/adblockers 
+			// blocking assets, or slow API calls), force load completion after 4 seconds.
+			fallbackTimer = window.setTimeout(() => {
+				setIsLoaded(true);
+			}, 4000);
 		}
 
 		return () => {
 			clearTimeout(timer);
+			if (fallbackTimer) clearTimeout(fallbackTimer);
 			window.removeEventListener('load', handlePageLoad);
 		};
 	}, []);
