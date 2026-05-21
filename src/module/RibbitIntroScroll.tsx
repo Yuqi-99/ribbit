@@ -109,8 +109,6 @@ export const RibbitIntroScroll = () => {
 	}, [preloadFrames, isLoadingComplete]);
 
 	useLayoutEffect(() => {
-		if (!isLoadingComplete) return;
-
 		const section = sectionRef.current;
 		const stage = stageRef.current;
 		const group = groupRef.current;
@@ -232,7 +230,7 @@ export const RibbitIntroScroll = () => {
 			ScrollTrigger.removeEventListener('refreshInit', calcCompactState);
 			context.revert();
 		};
-	}, [isLoadingComplete]);
+	}, []);
 
 	return (
 		<>
