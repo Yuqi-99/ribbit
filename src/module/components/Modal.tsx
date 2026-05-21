@@ -78,7 +78,7 @@ export const Modal = ({ children, opened, className, blur = false, onClose }: TM
 				<div
 					ref={modalRef}
 					className={cn(
-						'relative flex h-screen w-screen flex-col items-center justify-center bg-neutral-600 text-slate-900 shadow-2xl lg:min-w-210',
+						'relative flex h-screen w-screen flex-col items-center justify-center bg-neutral-600 text-slate-900 shadow-2xl lg:w-210',
 						className
 					)}
 				>
