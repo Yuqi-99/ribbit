@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { FrameCanvas } from 'src/module/components/FrameCanvas';
 import { clamp } from 'src/utils/clamp';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -89,23 +90,28 @@ const DescWord = ({
 	item: DescItem;
 	mode: CharacterMode;
 	setRowRef: (label: string, node: HTMLDivElement | null) => void;
-}) => (
-	<div
-		ref={(node) => setRowRef(item.label, node)}
-		className='relative flex w-fit items-center opacity-1 will-change-transform'
-		style={{ transformOrigin: 'center bottom' }}
-	>
-		<span className='text-darkink scale-x-85 scale-y-110 font-serif text-[clamp(4rem,14vw,13rem)] leading-[0.75] tracking-[-0.08em] select-none'>
-			{item.label}
-		</span>
-		<img
-			src={getCharacterFramePath(item.character, mode, frame)}
-			alt={item.character}
-			className={`pointer-events-none absolute z-10 h-auto select-none ${item.characterClassName}`}
-			draggable={false}
-		/>
-	</div>
-);
+}) => {
+	const src = getCharacterFramePath(item.character, mode, frame);
+	const fallbackSrc = getCharacterFramePath(item.character, 'idle', 0);
+
+	return (
+		<div
+			ref={(node) => setRowRef(item.label, node)}
+			className='relative flex w-fit items-center opacity-1 will-change-transform'
+			style={{ transformOrigin: 'center bottom' }}
+		>
+			<span className='text-darkink scale-x-85 scale-y-110 font-serif text-[clamp(4rem,14vw,13rem)] leading-[0.75] tracking-[-0.08em] select-none'>
+				{item.label}
+			</span>
+			<FrameCanvas
+				src={src}
+				fallbackSrc={fallbackSrc}
+				alt={item.character}
+				className={`pointer-events-none absolute z-10 h-auto select-none ${item.characterClassName}`}
+			/>
+		</div>
+	);
+};
 
 export const RibbitDesc = () => {
 	const wrapperRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { FrameCanvas } from 'src/module/components/FrameCanvas';
 import { Modal } from 'src/module/components/Modal';
 import { createPortal } from 'react-dom';
 
@@ -78,7 +79,7 @@ export const RibbitIntroScroll = () => {
 	const stageRef = useRef<HTMLDivElement | null>(null);
 	const groupRef = useRef<HTMLDivElement | null>(null);
 	const videoRef = useRef<HTMLDivElement | null>(null);
-	const characterRef = useRef<HTMLImageElement | null>(null);
+	const characterRef = useRef<HTMLCanvasElement | null>(null);
 	const pullTweenRef = useRef<gsap.core.Tween | null>(null);
 	const isPullPlayingRef = useRef(false);
 	// pull 只在「从 push 完成态往回滑」时触发一次
@@ -89,21 +90,8 @@ export const RibbitIntroScroll = () => {
 	const [characterFolder, setCharacterFolder] = useState<SageFolder>('sage_push');
 	const [frame, setFrame] = useState(0);
 	const [openModal, setOpenModal] = useState(false);
-
-	const preloadFrames = useMemo(
-		() =>
-			(Object.keys(SAGE_FRAME_COUNTS) as SageFolder[]).flatMap((folder) =>
-				Array.from({ length: SAGE_FRAME_COUNTS[folder] }, (_, i) => getFramePath(folder, i))
-			),
-		[]
-	);
-
-	useLayoutEffect(() => {
-		preloadFrames.forEach((src) => {
-			const img = new Image();
-			img.src = src;
-		});
-	}, [preloadFrames]);
+	const characterSrc = getFramePath(characterFolder, frame);
+	const characterFallbackSrc = getFramePath('sage_push', 0);
 
 	useLayoutEffect(() => {
 		const section = sectionRef.current;
@@ -242,13 +230,13 @@ export const RibbitIntroScroll = () => {
 						className='absolute top-8 right-0 flex items-end'
 						// style={{ transformOrigin: 'top left' }}
 					>
-						<img
+						<FrameCanvas
 							ref={characterRef}
-							src={getFramePath(characterFolder, frame)}
+							src={characterSrc}
+							fallbackSrc={characterFallbackSrc}
 							alt='Sage character pushing the video'
 							className='pointer-events-none relative z-20 h-auto w-[clamp(120px,18vw,260px)] shrink-0 select-none'
 							// style={{ transformOrigin: 'bottom right' }}
-							draggable={false}
 						/>
 						<div
 							ref={videoRef}

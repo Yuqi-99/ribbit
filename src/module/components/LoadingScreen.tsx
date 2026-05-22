@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
@@ -14,9 +15,10 @@ export const LoadingScreen = ({ onComplete }: { onComplete?: () => void }) => {
 	const creatorRef = useRef<HTMLDivElement | null>(null);
 
 	const [progress, setProgress] = useState(0);
-	const [isLoaded, setIsLoaded] = useState(false);
-	const [minTimeElapsed, setMinTimeElapsed] = useState(false);
 	const [isVisible, setIsVisible] = useState(true);
+
+	const isLoadedRef = useRef(false);
+	const minTimeElapsedRef = useRef(false);
 
 	// Lock body scroll while loading is active
 	useEffect(() => {
@@ -29,7 +31,7 @@ export const LoadingScreen = ({ onComplete }: { onComplete?: () => void }) => {
 	// Guarantee minimum display time of 3.5 seconds so all character entrance animations complete beautifully
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			setMinTimeElapsed(true);
+			minTimeElapsedRef.current = true;
 		}, 3500);
 		return () => clearTimeout(timer);
 	}, []);
@@ -98,58 +100,121 @@ export const LoadingScreen = ({ onComplete }: { onComplete?: () => void }) => {
 		}
 	}, []);
 
-	// 4. Loading logic & percentage progress counter (smooth climb over minimum time)
+	// 4. Loading logic & real image preloading
 	useEffect(() => {
-		let currentVal = 0;
-		let timer: number;
+		const ALL_IMAGE_FOLDERS = [
+			{ name: 'sage_push', count: 174 },
+			{ name: 'sage_pull', count: 25 },
+			{ name: 'creator_idle', count: 51 },
+			{ name: 'creator_push', count: 40 },
+			{ name: 'creator_pull', count: 40 },
+			{ name: 'explorer_idle', count: 40 },
+			{ name: 'explorer_push', count: 40 },
+			{ name: 'explorer_pull', count: 40 },
+			{ name: 'jester_idle_2', count: 51 },
+			{ name: 'jester_push_2', count: 58 },
+			{ name: 'outlaw_idle', count: 25 },
+			{ name: 'outlaw_push', count: 24 },
+			{ name: 'outlaw_pull', count: 26 },
+		];
 
-		const updateProgress = () => {
-			if (currentVal < 99) {
-				// Controlled steady climb to 99% over ~3.3s (averaging 1.5% every 50ms)
-				const increment = Math.floor(Math.random() * 2) + 1; // 1 or 2
-				currentVal = Math.min(99, currentVal + increment);
-				setProgress(currentVal);
-				timer = window.setTimeout(updateProgress, 50);
-			}
-		};
+		const PRELOAD_PATHS = ALL_IMAGE_FOLDERS.flatMap((folder) =>
+			Array.from({ length: folder.count }, (_, i) => `/assets/${folder.name}/${String(i).padStart(3, '0')}.png`)
+		);
 
-		updateProgress();
+		let loadedCount = 0;
+		const total = PRELOAD_PATHS.length;
+		let displayProgress = 0;
+		let rafId: number;
+		let targetProgress = 0;
 
-		const handlePageLoad = () => {
-			setIsLoaded(true);
-		};
-
-		// Check if page is already loaded
-		if (document.readyState === 'complete') {
-			setTimeout(() => {
-				setIsLoaded(true);
-			}, 0);
-		} else {
-			window.addEventListener('load', handlePageLoad);
+		// Create global memory cache to completely bypass browser network cache on scroll
+		if (!(window as any).PRELOADED_IMAGES) {
+			(window as any).PRELOADED_IMAGES = {};
 		}
+		if (!(window as any).PRELOADED_IMAGE_ELEMENTS) {
+			(window as any).PRELOADED_IMAGE_ELEMENTS = {};
+		}
+		if (!(window as any).PRELOADED_IMAGE_PROMISES) {
+			(window as any).PRELOADED_IMAGE_PROMISES = {};
+		}
+
+		// Concurrency limiter to prevent browser network exhaustion (ERR_INSUFFICIENT_RESOURCES)
+		const CONCURRENCY = 15;
+		let currentIndex = 0;
+
+		const loadNext = (): Promise<void> => {
+			if (currentIndex >= PRELOAD_PATHS.length) return Promise.resolve();
+			const src = PRELOAD_PATHS[currentIndex++];
+
+			// Skip if already loaded
+			if ((window as any).PRELOADED_IMAGES[src]) {
+				loadedCount++;
+				targetProgress = Math.floor((loadedCount / total) * 99);
+				return loadNext();
+			}
+
+			if (!(window as any).PRELOADED_IMAGE_PROMISES[src]) {
+				(window as any).PRELOADED_IMAGE_PROMISES[src] = fetch(src)
+					.then((res) => {
+						if (!res.ok) throw new Error('Failed');
+						return res.blob();
+					})
+					.then((blob) => {
+						const objectUrl = URL.createObjectURL(blob);
+						(window as any).PRELOADED_IMAGES[src] = objectUrl;
+						const image = new Image();
+						image.src = objectUrl;
+						(window as any).PRELOADED_IMAGE_ELEMENTS[src] = image;
+					})
+					.catch(() => {
+						// Fallback to original src later if this fails
+					});
+			}
+
+			return (window as any).PRELOADED_IMAGE_PROMISES[src].finally(() => {
+				loadedCount++;
+				targetProgress = Math.floor((loadedCount / total) * 99);
+				return loadNext();
+			});
+		};
+
+		const workers = Array.from({ length: Math.min(CONCURRENCY, PRELOAD_PATHS.length) }, () => loadNext());
+
+		// Smoothly animate the progress number
+		const animateProgress = () => {
+			if (isLoadedRef.current && minTimeElapsedRef.current) {
+				if (displayProgress < 100) {
+					displayProgress += Math.max(1, Math.floor((100 - displayProgress) * 0.15));
+					setProgress(Math.min(100, displayProgress));
+				}
+				if (displayProgress >= 100) {
+					return; // Stop animation loop
+				}
+			} else if (displayProgress < targetProgress) {
+				// Accelerate slightly if we are far behind, but keep it smooth
+				const diff = targetProgress - displayProgress;
+				displayProgress += Math.max(1, Math.floor(diff * 0.1));
+				setProgress(displayProgress);
+			}
+			rafId = requestAnimationFrame(animateProgress);
+		};
+		rafId = requestAnimationFrame(animateProgress);
+
+		Promise.all(workers).then(() => {
+			isLoadedRef.current = true;
+		});
+
+		// Fallback in case some network weirdness stalls the promises forever (5 minutes for extremely slow connections)
+		const fallbackTimer = window.setTimeout(() => {
+			isLoadedRef.current = true;
+		}, 300000);
 
 		return () => {
-			clearTimeout(timer);
-			window.removeEventListener('load', handlePageLoad);
+			cancelAnimationFrame(rafId);
+			clearTimeout(fallbackTimer);
 		};
 	}, []);
-
-	// 5. Trigger final run to 100% only when everything is fully loaded AND minimum display time has elapsed
-	useEffect(() => {
-		if (isLoaded && minTimeElapsed) {
-			const finishProgress = () => {
-				setProgress((prev) => {
-					if (prev < 100) {
-						const next = Math.min(100, prev + Math.floor(Math.random() * 8) + 4);
-						setTimeout(finishProgress, 30);
-						return next;
-					}
-					return 100;
-				});
-			};
-			finishProgress();
-		}
-	}, [isLoaded, minTimeElapsed]);
 
 	// 6. Trigger exit transition when progress hits 100%
 	useEffect(() => {

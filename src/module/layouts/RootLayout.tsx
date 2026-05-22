@@ -1,15 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from 'src/module/layouts/Header';
 import { useSmoothScroll } from 'src/hooks/useSmoothScroll';
 import { Footer } from 'src/module/layouts/Footer';
 import { LoadingScreen } from 'src/module/components/LoadingScreen';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 export const RootLayout = () => {
 	const [isLoadingComplete, setIsLoadingComplete] = useState(false);
 
 	// 0.09 = nice inertia feel; raise toward 0.15 for snappier, lower toward 0.07 for more float
 	useSmoothScroll(0.12);
+
+	useEffect(() => {
+		if (isLoadingComplete) {
+			// Refresh ScrollTrigger after loading screen is gone and overflow is restored
+			// A small timeout ensures the DOM has fully updated
+			setTimeout(() => {
+				ScrollTrigger.refresh();
+			}, 100);
+		}
+	}, [isLoadingComplete]);
 
 	return (
 		<>

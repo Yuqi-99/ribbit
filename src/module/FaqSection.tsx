@@ -116,7 +116,7 @@ export const FaqSection = () => {
 										<img
 											src='/assets/process_book.png'
 											alt='Process Book'
-											className='h-fit w-full object-cover'
+											className='h-fit max-h-162.5 w-full object-cover'
 										/>
 									</div>
 								</div>
