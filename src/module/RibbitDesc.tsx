@@ -24,7 +24,6 @@ type DescItem = {
 };
 
 const DESC_SCROLL_DISTANCE = 700; // sticky wrapper approach: total scroll = 100dvh + this
-const IDLE_DELAY = 120;
 
 const CHARACTER_ASSETS: Record<CharacterKey, CharacterAsset> = {
 	creator: {
@@ -85,11 +84,13 @@ const DescWord = ({
 	item,
 	mode,
 	setRowRef,
+	setTextRef,
 }: {
 	frame: number;
 	item: DescItem;
 	mode: CharacterMode;
 	setRowRef: (label: string, node: HTMLDivElement | null) => void;
+	setTextRef: (label: string, node: HTMLDivElement | null) => void;
 }) => {
 	const src = getCharacterFramePath(item.character, mode, frame);
 	const fallbackSrc = getCharacterFramePath(item.character, 'idle', 0);
@@ -98,11 +99,16 @@ const DescWord = ({
 		<div
 			ref={(node) => setRowRef(item.label, node)}
 			className='relative flex w-fit items-center opacity-1 will-change-transform'
-			style={{ transformOrigin: 'center bottom' }}
 		>
-			<span className='text-darkink scale-x-85 scale-y-110 font-serif text-[clamp(4rem,14vw,13rem)] leading-[0.75] tracking-[-0.08em] select-none'>
-				{item.label}
-			</span>
+			<div
+				ref={(node) => setTextRef(item.label, node)}
+				className='will-change-transform'
+				style={{ transformOrigin: 'center bottom' }}
+			>
+				<span className='text-darkink block scale-x-85 scale-y-110 font-serif text-[clamp(4rem,14vw,13rem)] leading-[0.75] tracking-[-0.08em] select-none'>
+					{item.label}
+				</span>
+			</div>
 			<FrameCanvas
 				src={src}
 				fallbackSrc={fallbackSrc}
@@ -117,13 +123,13 @@ export const RibbitDesc = () => {
 	const wrapperRef = useRef<HTMLDivElement>(null);
 	const sectionRef = useRef<HTMLElement>(null);
 	const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const textRefs = useRef<Record<string, HTMLDivElement | null>>({});
 	const modesRef = useRef<Record<CharacterKey, CharacterMode>>({
 		creator: 'idle',
 		explorer: 'idle',
 		jester: 'idle',
 		outlaw: 'idle',
 	});
-	const idleTimerRef = useRef<number | null>(null);
 
 	const [modes, setModes] = useState<Record<CharacterKey, CharacterMode>>({
 		creator: 'idle',
@@ -132,6 +138,8 @@ export const RibbitDesc = () => {
 		outlaw: 'idle',
 	});
 	const frameTickRef = useRef(0);
+	const isScrollingRef = useRef(false);
+	const scrollTimeoutRef = useRef<number | null>(null);
 
 	const [frames, setFrames] = useState<Record<CharacterKey, number>>({
 		creator: 0,
@@ -149,6 +157,12 @@ export const RibbitDesc = () => {
 				let changed = false;
 				(Object.keys(next) as CharacterKey[]).forEach((key) => {
 					const currentMode = modesRef.current[key];
+
+					// Freeze push/pull animation if not currently scrolling
+					if (currentMode !== 'idle' && !isScrollingRef.current) {
+						return;
+					}
+
 					// Skip frame update on odd ticks to keep 'idle' twice as slow (90ms vs 45ms)
 					if (currentMode === 'idle' && frameTickRef.current % 2 !== 0) {
 						return;
@@ -176,29 +190,19 @@ export const RibbitDesc = () => {
 
 			const quickTweens = DESC_ITEMS.map((item, index) => {
 				const el = rowRefs.current[item.label];
+				const textEl = textRefs.current[item.label];
 				const scatterX = scatterOffsets[index];
 				// 初始位置设置到刚好在屏幕外
 				gsap.set(el, { x: scatterX, opacity: 1 });
+				gsap.set(textEl, { skewX: 0 });
 
 				return {
 					el,
 					scatterX: scatterX,
 					x: gsap.quickTo(el, 'x', { duration: 0.7, ease: 'power2.out' }),
-					skew: gsap.quickTo(el, 'skewX', { duration: 0.8, ease: 'power2.out' }),
+					textSkew: gsap.quickTo(textEl, 'skewX', { duration: 0.8, ease: 'power2.out' }),
 				};
 			});
-
-			const resetToIdle = () => {
-				const allIdle: Record<CharacterKey, CharacterMode> = {
-					creator: 'idle',
-					explorer: 'idle',
-					jester: 'idle',
-					outlaw: 'idle',
-				};
-				modesRef.current = allIdle;
-				setModes(allIdle);
-				quickTweens.forEach((qt) => qt.skew(0));
-			};
 
 			// Single trigger on wrapper — no GSAP pin, CSS sticky handles the lock.
 			// start:'top bottom' = section enters viewport → animation begins immediately.
@@ -210,12 +214,14 @@ export const RibbitDesc = () => {
 				end: 'bottom bottom',
 				scrub: 1.5,
 				onUpdate: (self) => {
-					const p = self.progress;
-					const vel = self.getVelocity();
-					const direction = self.direction;
+					isScrollingRef.current = true;
+					if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current);
+					scrollTimeoutRef.current = window.setTimeout(() => {
+						isScrollingRef.current = false;
+					}, 100);
 
-					const globalMoving = Math.abs(vel) > 15;
-					const globalMode = direction === 1 ? 'push' : 'pull';
+					const p = self.progress;
+					const direction = self.direction;
 
 					let modesChanged = false;
 					const newModes = { ...modesRef.current };
@@ -231,9 +237,10 @@ export const RibbitDesc = () => {
 						let localP = (p - startP) / (endP - startP);
 						localP = clamp(localP, 0, 1);
 
-						const isMoving = localP > 0 && localP < 1 && globalMoving;
+						const isTransit = localP > 0.01 && localP < 0.99;
 						const character = DESC_ITEMS[index].character;
-						const expectedMode = isMoving ? globalMode : 'idle';
+						// Character plays push/pull frames if in transit, otherwise idle
+						const expectedMode = isTransit ? (direction === 1 ? 'push' : 'pull') : 'idle';
 
 						if (newModes[character] !== expectedMode) {
 							newModes[character] = expectedMode;
@@ -242,21 +249,36 @@ export const RibbitDesc = () => {
 
 						const moveProgress = gsap.parseEase('power3.out')(localP);
 						const baseX = qt.scatterX * (1 - moveProgress);
-						const targetSkew = isMoving ? clamp(vel / 50, -55, 55) : 0;
+
+						// "推的时候向外倒，拉的时候向内倒"
+						const inertiaDirection = Math.sign(qt.scatterX || 1);
+
+						// Calculate a smooth tilt factor based purely on scroll progress (trapezoid function).
+						// This ensures it starts upright (0), smoothly tilts, holds the tilt, and smoothly sets down.
+						let tiltFactor = 0;
+						if (localP <= 0 || localP >= 1) {
+							tiltFactor = 0;
+						} else if (localP < 0.15) {
+							// Ramp up during the first 15% of the movement
+							tiltFactor = localP / 0.15;
+						} else if (localP > 0.85) {
+							// Ramp down during the last 15% of the movement
+							tiltFactor = (1 - localP) / 0.15;
+						} else {
+							// Hold steady in the middle
+							tiltFactor = 1;
+						}
+
+						// "不那么倾斜": Set maximum tilt to 15 degrees (gentle lean)
+						const targetSkew = 25 * tiltFactor * inertiaDirection * self.direction;
 
 						qt.x(baseX);
-						qt.skew(targetSkew);
+						qt.textSkew(targetSkew);
 					});
 
 					if (modesChanged) {
 						modesRef.current = newModes;
 						setModes(newModes);
-					}
-
-					// 状态重置计时器
-					if (globalMoving) {
-						if (idleTimerRef.current) window.clearTimeout(idleTimerRef.current);
-						idleTimerRef.current = window.setTimeout(resetToIdle, IDLE_DELAY);
 					}
 				},
 			});
@@ -283,6 +305,7 @@ export const RibbitDesc = () => {
 									mode={modes['creator']}
 									frame={frames['creator']}
 									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+									setTextRef={(l, n) => (textRefs.current[l] = n)}
 								/>
 							</div>
 
@@ -293,6 +316,7 @@ export const RibbitDesc = () => {
 									mode={modes['jester']}
 									frame={frames['jester']}
 									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+									setTextRef={(l, n) => (textRefs.current[l] = n)}
 								/>
 							</div>
 
@@ -303,12 +327,14 @@ export const RibbitDesc = () => {
 									mode={modes['explorer']}
 									frame={frames['explorer']}
 									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+									setTextRef={(l, n) => (textRefs.current[l] = n)}
 								/>
 								<DescWord
 									item={DESC_ITEMS[3]}
 									mode={modes['outlaw']}
 									frame={frames['outlaw']}
 									setRowRef={(l, n) => (rowRefs.current[l] = n)}
+									setTextRef={(l, n) => (textRefs.current[l] = n)}
 								/>
 							</div>
 						</div>
